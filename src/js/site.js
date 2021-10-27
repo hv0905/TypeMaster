@@ -23,16 +23,21 @@ let completePart = '';
 let pendingPart = '';
 let totalWords = 0;
 let gameRunning = false;
+let errMode = false;
 
 
 
 function ResetStatus() {
     gameRunning = false;
+    completePart = '';
+    completeWords = [];
+    errMode = false;
     let tcase = testcases[testcaseIndex];
     pendingWords = tcase.split(' ');
     totalWords = pendingWords.length;
     typingword = pendingPart = pendingWords[0];
     pendingWords.splice(0, 1);
+    document.querySelector('#input-word').value = '';
     
 }
 
@@ -45,6 +50,7 @@ function ChangeTestcase() {
 function RollWord() {
     completeWords.push(typingword);
     typingword = pendingPart = pendingWords[0];
+    completePart = '';
     pendingWords.splice(0, 1);
     document.querySelector('#input-word').value = '';
 }
@@ -55,10 +61,25 @@ function StartGame() {
 }
 
 function Render() {
+    let wordPending = document.querySelector('#word-pending');
+
     document.querySelector('#sentence-done').innerText = completeWords.join(' ');
-    document.querySelector("#word-done").innerText = completePart;
-    document.querySelector("#word-pending").innerText = pendingPart;
-    document.querySelector("#sentence-pending").innerText = pendingWords.join(' ');
+    document.querySelector('#word-done').innerText = completePart;
+    wordPending.innerText = pendingPart;
+    document.querySelector('#sentence-pending').innerText = pendingWords.join(' ');
+
+    let invalidWarning  = document.querySelector('#invalid-warning');
+    let inputWord = document.querySelector("#input-word");
+
+    if (errMode) {
+        invalidWarning.classList.remove('invisible');
+        inputWord.classList.add('is-invalid');
+        wordPending.classList.add('word-err');
+    } else {
+        invalidWarning.classList.add('invisible');
+        inputWord.classList.remove('is-invalid');
+        wordPending.classList.remove('word-err');
+    }
 }
 
 window.addEventListener('load', function() {
@@ -66,19 +87,35 @@ window.addEventListener('load', function() {
         document.querySelector('#input-word').focus();
     });
 
-    this.document.querySelector('#input-word').addEventListener('keyup', e => {
-        if (e.key === ' ') {
-            // press space bar, go to next word
+    let inputWord = this.document.querySelector('#input-word');
+    inputWord.addEventListener('input', e => {
+        let expected = typingword + ' ';
+        if (expected.startsWith(inputWord.value)) {
+            // Currectly Typing
+            errMode = false;
+            if (expected === inputWord.value) {
+                // Done! go to next word
+                RollWord();
+            } else {
+                completePart = inputWord.value;
+                pendingPart = typingword.substr(inputWord.value.length);
+            }
             
-        } else if (e.key === 'Backspace') {
-            // go back a letter
         } else {
-
+            // Must be something wrong....
+            errMode = true;
         }
-
-
-        
+        Render();
     });
+
+    this.document.querySelector('#btn-retry').addEventListener('click', () => {
+        ResetStatus();
+        Render();
+    });
+    this.document.querySelector('#btn-change-testcase').addEventListener('click', () => {
+        ChangeTestcase();
+        Render();
+    })
 
     ChangeTestcase();
     Render();

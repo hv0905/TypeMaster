@@ -24,6 +24,10 @@
     color: #16a085;
 }
 
+.word-err {
+    color: #c0392b;
+}
+
 .word-done, .word-pending {
     text-decoration: underline;
 }
