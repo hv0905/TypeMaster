@@ -1,0 +1,10 @@
+{
+  "name": "typemaster_bootstrap",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": "true",
+  "devDependencies": {},
+  "dependencies": {
+    "live-server": "^1.2.1"
+  }
+}

@@ -1,0 +1,59 @@
+.top-space {
+    height: 20px;
+}
+
+.wrapper-info-card {
+    width: 250px;
+}
+
+.info-card {
+    display: grid;
+    grid-template-columns: auto auto;
+}
+
+.info-card .info-title {
+    grid-column: 1/2;
+}
+
+.info-card .info-value {
+    text-align: right;
+    grid-column: 2/-1;
+}
+
+.sentence-done, .word-done {
+    color: #16a085;
+}
+
+.word-done, .word-pending {
+    text-decoration: underline;
+}
+
+.word-done {
+    position: relative;
+}
+
+.word-done::after {
+    content: ' ';
+    position: absolute;
+    right: -1px;
+    background-color: black;
+    width: 2px;
+    height: 100%;
+    animation: 1.2s ease-in-out blinking;
+    animation-iteration-count: infinite;
+}
+
+.sentence-pending {
+    color: #777;
+}
+
+@keyframes blinking {
+    0%,100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
