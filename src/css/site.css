@@ -20,6 +20,10 @@
     grid-column: 2/-1;
 }
 
+.sentence-section {
+    font-family: monospace;
+}
+
 .sentence-done, .word-done {
     color: #16a085;
 }

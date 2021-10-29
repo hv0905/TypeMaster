@@ -31,7 +31,7 @@
     <div class="top-space"></div>
     <div class="container-lg">
         <!--Placeholder for alert-->
-        <div id="liveAlertPlaceholder"></div>
+        <div id="alert-placeholder"></div>
         <!--control section-->
         <div class="mb-3">
             <button class="btn btn-primary me-1" id="btn-retry"><i class="fas fa-redo"></i> 重试</button>
@@ -69,11 +69,13 @@
         <!--Sentence section-->
         <div class="card m-3" id="live-input-card">
             <div class="card-body sentence-section">
+                <div id="para-before" class="sentence-done"></div>
                 <p>
                 <span class="sentence-done" id="sentence-done"></span>
-                <span class="word-done" id="word-done"></span><span class="word-pending" id="word-pending"></span>
+                <span class="word-done" id="word-done"></span><span class="word-err" id="word-err"></span><span class="word-pending" id="word-pending"></span>
                 <span class="sentence-pending" id="sentence-pending"></span>
                 </p>
+                <div id="para-after" class="sentence-pending"></div>
             </div>
         </div>
 
@@ -85,6 +87,7 @@
         </div>
     </div>
 
+    <!--scripts goes here-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous">
     </script>

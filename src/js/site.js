@@ -1,8 +1,7 @@
 'use strict';
 
 const testcases = [
-    "Take a breath, now. Take another. Feel air in your lungs. Let your limbs return. Yes, move your fingers. Have a body again, under gravity, in air. Respawn in the long dream. There you are. Your body touching the universe again at every point, as though you were separate things. As though we were separate things.",
-    "Who are we? Once we were called the spirit of the mountain. Father sun, mother moon. Ancestral spirits, animal spirits. Jinn. Ghosts. The green man. Then gods, demons. Angels. Poltergeists. Aliens, extraterrestrials. Leptons, quarks. The words change. We do not change.",
+    "Take a breath, now. Take another. Feel air in your lungs. Let your limbs return. Yes, move your fingers. Have a body again, under gravity, in air. Respawn in the long dream. There you are. Your body touching the universe again at every point, as though you were separate things. As though we were separate things.\nWho are we? Once we were called the spirit of the mountain. Father sun, mother moon. Ancestral spirits, animal spirits. Jinn. Ghosts. The green man. Then gods, demons. Angels. Poltergeists. Aliens, extraterrestrials. Leptons, quarks. The words change. We do not change.",
     "We are the universe. We are everything you think isn't you. You are looking at us now, through your skin and your eyes. And why does the universe touch your skin, and throw light on you? To see you, player. To know you. And to be known. I shall tell you a story.",
     "Sometimes it thought itself human, on the thin crust of a spinning globe of molten rock. The ball of molten rock circled a ball of blazing gas that was three hundred and thirty thousand times more massive than it. They were so far apart that light took eight minutes to cross the gap. The light was information from a star, and it could burn your skin from a hundred and fifty million kilometres away.",
     "Sometimes the player dreamed it was a miner, on the surface of a world that was flat, and infinite. The sun was a square of white. The days were short; there was much to do; and death was a temporary inconvenience.",
@@ -30,21 +29,32 @@ let currentParaIndex = 0;
 
 
 
+function liveAlert(message, type) {
+    var wrapper = document.createElement('div');
+    wrapper.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
+  
+    document.querySelector('#alert-placeholder').append(wrapper);
+  }
+
 function ResetStatus() {
     gameRunning = false;
-    completePart = '';
-    completeWords = [];
     errMode = false;
     completedWordCount = 0;
     currentParaIndex = 0;
     let tcase = testcases[testcaseIndex];
     paragraphs = tcase.split('\n');
-    pendingWords = paragraphs[0].split(' ');
+    LoadPara();
+    document.querySelector('#input-word').value = '';
+    
+}
+
+function LoadPara() {
+    completePart = '';
+    completeWords = [];
+    pendingWords = paragraphs[currentParaIndex].split(' ');
     totalWords = pendingWords.length;
     typingword = pendingPart = pendingWords[0];
     pendingWords.splice(0, 1);
-    document.querySelector('#input-word').value = '';
-    
 }
 
 function ChangeTestcase() {
@@ -61,12 +71,42 @@ function RollWord() {
     document.querySelector('#input-word').value = '';
 }
 
+function RollPara() {
+    currentParaIndex++;
+    LoadPara();
+    document.querySelector('#input-word').value = '';
+}
+
 function StartGame() {
     gameRunning = true;
     startTime = Date.now();
 }
 
 function Render() {
+    let paraBefore = document.querySelector("#para-before");
+    if (currentParaIndex > 0) {
+        let paras = paragraphs.slice(0, currentParaIndex).map(t => {
+            let element = document.createElement('p');
+            element.innerText = t;
+            return element;
+        });
+        paraBefore.replaceChildren(...paras);
+    } else {
+        paraBefore.innerHTML = '';
+    }
+
+    let paraAfter = document.querySelector("#para-after");
+    if (currentParaIndex < paragraphs.length - 1) {
+        let paras = paragraphs.slice(currentParaIndex + 1).map(t => {
+            let element = document.createElement('p');
+            element.innerText = t;
+            return element;
+        });
+        paraAfter.replaceChildren(...paras);
+    } else {
+        paraAfter.innerHTML = '';
+    }
+
     let wordPending = document.querySelector('#word-pending');
 
     document.querySelector('#sentence-done').innerText = completeWords.join(' ');
@@ -88,23 +128,32 @@ function Render() {
     }
 }
 
-window.addEventListener('load', function() {
-    document.querySelector('#live-input-card').addEventListener('click', () => {
-        document.querySelector('#input-word').focus();
-    });
+function completeGame() {
+    gameRunning = false;
+    liveAlert("测试完成.", 'success');
+}
 
-    let inputWord = this.document.querySelector('#input-word');
-    inputWord.addEventListener('input', e => {
-        let expected = typingword + ' ';
-        if (expected.startsWith(inputWord.value)) {
+function judgeKey(enter) {
+    let inputVal = document.querySelector('#input-word').value;
+    let expected = (pendingWords.length === 0) ? typingword : typingword + ' ';
+        if (expected.startsWith(inputVal)) {
             // Currectly Typing
             errMode = false;
-            if (expected === inputWord.value) {
+            completePart = inputVal;
+            pendingPart = typingword.substr(inputVal.length);
+            if (pendingWords.length === 0 && expected === inputVal) {
+                if (currentParaIndex === paragraphs.length - 1) {
+                    // EOF!!!
+                    completeGame();
+                } else if (enter) {
+                    RollPara();
+                } else {
+                    completePart = inputVal;
+                    pendingPart = '';
+                }
+            } else if (expected === inputVal) {
                 // Done! go to next word
                 RollWord();
-            } else {
-                completePart = inputWord.value;
-                pendingPart = typingword.substr(inputWord.value.length);
             }
             
         } else {
@@ -112,7 +161,20 @@ window.addEventListener('load', function() {
             errMode = true;
         }
         Render();
+}
+
+window.addEventListener('load', function() {
+    document.querySelector('#live-input-card').addEventListener('click', () => {
+        document.querySelector('#input-word').focus();
     });
+
+    let inputWord = this.document.querySelector('#input-word');
+    inputWord.addEventListener('keyup', e => {
+        if (e.key === 'Enter') {
+            judgeKey(true);
+        }
+    });
+    inputWord.addEventListener('input', () => judgeKey(false));
 
     this.document.querySelector('#btn-retry').addEventListener('click', () => {
         ResetStatus();
@@ -122,7 +184,7 @@ window.addEventListener('load', function() {
         ChangeTestcase();
         Render();
     })
-
+    
     ChangeTestcase();
     Render();
 });
