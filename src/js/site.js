@@ -22,8 +22,11 @@ let typingword = '';
 let completePart = '';
 let pendingPart = '';
 let totalWords = 0;
+let completedWordCount = 0;
 let gameRunning = false;
 let errMode = false;
+let paragraphs = [];
+let currentParaIndex = 0;
 
 
 
@@ -32,8 +35,11 @@ function ResetStatus() {
     completePart = '';
     completeWords = [];
     errMode = false;
+    completedWordCount = 0;
+    currentParaIndex = 0;
     let tcase = testcases[testcaseIndex];
-    pendingWords = tcase.split(' ');
+    paragraphs = tcase.split('\n');
+    pendingWords = paragraphs[0].split(' ');
     totalWords = pendingWords.length;
     typingword = pendingPart = pendingWords[0];
     pendingWords.splice(0, 1);
