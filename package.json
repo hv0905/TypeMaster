@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "license": "MIT",
   "private": "true",
-  "devDependencies": {},
-  "dependencies": {
+  "devDependencies": {
     "live-server": "^1.2.1"
+  },
+  "dependencies": {
+    
   }
 }
