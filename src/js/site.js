@@ -17,6 +17,7 @@ let testcaseIndex = -1;
 let startTime = 0;
 let completeWords = [];
 let pendingWords = [];
+let totalWordCount = 0;
 let typingword = '';
 let completePart = '';
 let pendingPart = '';
@@ -44,6 +45,7 @@ function ResetStatus() {
     currentParaIndex = 0;
     let tcase = testcases[testcaseIndex];
     paragraphs = tcase.split('\n');
+    totalWordCount = paragraphs.map(t => t.split(' ').length).reduce((x,y) => x + y);
     LoadPara();
     document.querySelector('#input-word').value = '';
 
@@ -76,6 +78,22 @@ function NextPara() {
     currentParaIndex++;
     LoadPara();
     document.querySelector('#input-word').value = '';
+}
+
+function GetStatistics() {
+    const gameTime = Math.round((Date.now() - startTime) / 1000);
+    return {
+        gameTime: gameTime,
+        speed: Math.round(completedWordCount / (Math.max(gameTime, 1) / 60)),
+        progress: `${completedWordCount}/${totalWordCount} (${Math.round(completedWordCount / totalWordCount * 100)}%)`
+    };
+}
+
+function RenderStatistics() {
+    const stat = GetStatistics();
+    document.querySelector('#display-time').innerText = `${Math.floor(stat.gameTime / 60)}:${stat.gameTime % 60}`;
+    document.querySelector('#display-speed').innerText = `${stat.speed} wpm`;
+    document.querySelector('#display-progress').innerText = `${stat.progress}`;
 }
 
 function StartGame() {
@@ -129,6 +147,9 @@ function Render() {
         inputWord.classList.remove('is-invalid');
         wordErr.innerText = '';
     }
+    if (gameRunning) {
+        RenderStatistics();
+    }
 }
 
 function completeGame() {
@@ -144,6 +165,9 @@ function compareFromStart(base, target) {
 }
 
 function judgeKey(enter) {
+    if (gameRunning === false) {
+        StartGame();
+    }
     let inputVal = document.querySelector('#input-word').value;
     let expected = (pendingWords.length === 0) ? typingword : typingword + ' ';
     if (expected.startsWith(inputVal)) {
@@ -154,8 +178,10 @@ function judgeKey(enter) {
         if (pendingWords.length === 0 && expected === inputVal) {
             if (currentParaIndex === paragraphs.length - 1) {
                 // EOF!!!
+                completedWordCount++;
                 completeGame();
             } else if (enter) {
+                completedWordCount++;
                 NextPara();
             } else {
                 completePart = inputVal;
@@ -163,6 +189,7 @@ function judgeKey(enter) {
             }
         } else if (expected === inputVal) {
             // Done! go to next word
+            completedWordCount++;
             NextWord();
         }
 
