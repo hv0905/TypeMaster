@@ -29,7 +29,9 @@
 }
 
 .word-err {
+    position: relative;
     color: #c0392b;
+    text-decoration: underline;
 }
 
 .word-done, .word-pending {
@@ -40,7 +42,7 @@
     position: relative;
 }
 
-.word-done::after {
+.word-err::after {
     content: ' ';
     position: absolute;
     right: -1px;

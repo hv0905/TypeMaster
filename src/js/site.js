@@ -24,6 +24,7 @@ let totalWords = 0;
 let completedWordCount = 0;
 let gameRunning = false;
 let errMode = false;
+let errContent = '';
 let paragraphs = [];
 let currentParaIndex = 0;
 
@@ -32,9 +33,9 @@ let currentParaIndex = 0;
 function liveAlert(message, type) {
     var wrapper = document.createElement('div');
     wrapper.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
-  
+
     document.querySelector('#alert-placeholder').append(wrapper);
-  }
+}
 
 function ResetStatus() {
     gameRunning = false;
@@ -45,7 +46,7 @@ function ResetStatus() {
     paragraphs = tcase.split('\n');
     LoadPara();
     document.querySelector('#input-word').value = '';
-    
+
 }
 
 function LoadPara() {
@@ -60,10 +61,10 @@ function LoadPara() {
 function ChangeTestcase() {
     testcaseIndex = Math.floor(Math.random() * testcases.length);
     ResetStatus();
-    
+
 }
 
-function RollWord() {
+function NextWord() {
     completeWords.push(typingword);
     typingword = pendingPart = pendingWords[0];
     completePart = '';
@@ -71,7 +72,7 @@ function RollWord() {
     document.querySelector('#input-word').value = '';
 }
 
-function RollPara() {
+function NextPara() {
     currentParaIndex++;
     LoadPara();
     document.querySelector('#input-word').value = '';
@@ -114,17 +115,19 @@ function Render() {
     wordPending.innerText = pendingPart;
     document.querySelector('#sentence-pending').innerText = pendingWords.join(' ');
 
-    let invalidWarning  = document.querySelector('#invalid-warning');
+    let invalidWarning = document.querySelector('#invalid-warning');
     let inputWord = document.querySelector("#input-word");
+    let wordErr = document.querySelector('#word-err');
 
     if (errMode) {
         invalidWarning.classList.remove('invisible');
         inputWord.classList.add('is-invalid');
-        wordPending.classList.add('word-err');
+        wordErr.innerText = errContent;
+
     } else {
         invalidWarning.classList.add('invisible');
         inputWord.classList.remove('is-invalid');
-        wordPending.classList.remove('word-err');
+        wordErr.innerText = '';
     }
 }
 
@@ -133,42 +136,50 @@ function completeGame() {
     liveAlert("测试完成.", 'success');
 }
 
+function compareFromStart(base, target) {
+    for (let index = 0; index < base.length; index++) {
+        if (base[index] !== target[index]) return index;
+    }
+    return base.length;
+}
+
 function judgeKey(enter) {
     let inputVal = document.querySelector('#input-word').value;
     let expected = (pendingWords.length === 0) ? typingword : typingword + ' ';
-        if (expected.startsWith(inputVal)) {
-            // Currectly Typing
-            errMode = false;
-            completePart = inputVal;
-            pendingPart = typingword.substr(inputVal.length);
-            if (pendingWords.length === 0 && expected === inputVal) {
-                if (currentParaIndex === paragraphs.length - 1) {
-                    // EOF!!!
-                    completeGame();
-                } else if (enter) {
-                    RollPara();
-                } else {
-                    completePart = inputVal;
-                    pendingPart = '';
-                }
-            } else if (expected === inputVal) {
-                // Done! go to next word
-                RollWord();
+    if (expected.startsWith(inputVal)) {
+        // Currectly Typing
+        errMode = false;
+        completePart = inputVal;
+        pendingPart = typingword.substr(inputVal.length);
+        if (pendingWords.length === 0 && expected === inputVal) {
+            if (currentParaIndex === paragraphs.length - 1) {
+                // EOF!!!
+                completeGame();
+            } else if (enter) {
+                NextPara();
+            } else {
+                completePart = inputVal;
+                pendingPart = '';
             }
-            
-        } else {
-            // Must be something wrong....
-            errMode = true;
+        } else if (expected === inputVal) {
+            // Done! go to next word
+            NextWord();
         }
-        Render();
+
+    } else {
+        // Must be something wrong....
+        errContent = inputVal.slice(compareFromStart(expected, inputVal));
+        errMode = true;
+    }
+    Render();
 }
 
-window.addEventListener('load', function() {
+(function () {
     document.querySelector('#live-input-card').addEventListener('click', () => {
         document.querySelector('#input-word').focus();
     });
 
-    let inputWord = this.document.querySelector('#input-word');
+    let inputWord = document.querySelector('#input-word');
     inputWord.addEventListener('keyup', e => {
         if (e.key === 'Enter') {
             judgeKey(true);
@@ -176,15 +187,15 @@ window.addEventListener('load', function() {
     });
     inputWord.addEventListener('input', () => judgeKey(false));
 
-    this.document.querySelector('#btn-retry').addEventListener('click', () => {
+    document.querySelector('#btn-retry').addEventListener('click', () => {
         ResetStatus();
         Render();
     });
-    this.document.querySelector('#btn-change-testcase').addEventListener('click', () => {
+    document.querySelector('#btn-change-testcase').addEventListener('click', () => {
         ChangeTestcase();
         Render();
-    })
-    
+    });
+
     ChangeTestcase();
     Render();
-});
+})();
