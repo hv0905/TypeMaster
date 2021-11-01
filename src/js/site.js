@@ -12,6 +12,7 @@ const testcases = [
 
 let testcaseIndex = -1;
 let startTime = 0;
+let endTime = 0;
 let completeWords = [];
 let pendingWords = [];
 let totalWordCount = 0;
@@ -28,7 +29,7 @@ let currentParaIndex = 0;
 
 
 
-function liveAlert(message, type) {
+function LiveAlert(message, type) {
     var wrapper = document.createElement('div');
     wrapper.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
 
@@ -36,15 +37,18 @@ function liveAlert(message, type) {
 }
 
 function ResetStatus() {
+    startTime = endTime = 0;
     gameRunning = false;
     errMode = false;
     completedWordCount = 0;
     currentParaIndex = 0;
     let tcase = testcases[testcaseIndex];
     paragraphs = tcase.split('\n');
-    totalWordCount = paragraphs.map(t => t.split(' ').length).reduce((x,y) => x + y);
+    totalWordCount = paragraphs.map(t => t.split(' ').length).reduce((x, y) => x + y);
     LoadPara();
-    document.querySelector('#input-word').value = '';
+    let inputWord = document.querySelector('#input-word');
+    inputWord.vale = '';
+    inputWord.readOnly = false;
 
 }
 
@@ -78,11 +82,20 @@ function NextPara() {
 }
 
 function GetStatistics() {
-    const gameTime = Math.round((Date.now() - startTime) / 1000);
+    let gameTime;
+    if (endTime !== 0) {
+        gameTime = Math.round((endTime - startTime) / 1000);
+    } else if (startTime !== 0) {
+        gameTime = Math.round((Date.now() - startTime) / 1000);
+    } else {
+        gameTime = 0;
+    }
     return {
+        eventTime: Date.now(),
         gameTime: gameTime,
         speed: Math.round(completedWordCount / (Math.max(gameTime, 1) / 60)),
-        progress: `${completedWordCount}/${totalWordCount} (${Math.round(completedWordCount / totalWordCount * 100)}%)`
+        progress: `${completedWordCount}/${totalWordCount} (${Math.round(completedWordCount / totalWordCount * 100)}%)`,
+        wordCount: totalWordCount
     };
 }
 
@@ -144,24 +157,27 @@ function Render() {
         inputWord.classList.remove('is-invalid');
         wordErr.innerText = '';
     }
-    if (gameRunning) {
-        RenderStatistics();
-    }
+    RenderStatistics();
 }
 
-function completeGame() {
+function CompleteGame() {
     gameRunning = false;
-    liveAlert("测试完成.", 'success');
+    endTime = Date.now();
+    let inputWord = document.querySelector('#input-word');
+    inputWord.readOnly = true;
+    LiveAlert("测试完成.", 'success');
+    SaveLog(GetStatistics());
+    LoadLog();
 }
 
-function compareFromStart(base, target) {
+function CompareFromStart(base, target) {
     for (let index = 0; index < base.length; index++) {
         if (base[index] !== target[index]) return index;
     }
     return base.length;
 }
 
-function judgeKey(enter) {
+function JudgeKey(enter) {
     if (gameRunning === false) {
         StartGame();
     }
@@ -176,7 +192,7 @@ function judgeKey(enter) {
             if (currentParaIndex === paragraphs.length - 1) {
                 // EOF!!!
                 completedWordCount++;
-                completeGame();
+                CompleteGame();
             } else if (enter) {
                 completedWordCount++;
                 NextPara();
@@ -192,10 +208,45 @@ function judgeKey(enter) {
 
     } else {
         // Must be something wrong....
-        errContent = inputVal.slice(compareFromStart(expected, inputVal));
+        errContent = inputVal.slice(CompareFromStart(expected, inputVal));
         errMode = true;
     }
     Render();
+}
+
+function LoadLog() {
+    const logString = localStorage.getItem('test-log');
+    const scoreBoard = document.querySelector('#scoreboard');
+    scoreBoard.innerHTML = '';
+    if (logString) {
+        const log = new Array(...JSON.parse(logString));
+        log.sort((x, y) => x.speed - y.speed);
+        log.forEach((t, index) => {
+            let tr = document.createElement('tr');
+            tr.insertCell().innerText = index + 1; // Index
+            tr.insertCell().innerText = t.eventTime;
+            tr.insertCell().innerText = t.gameTime;
+            tr.insertCell().innerText = t.wordCount;
+            tr.insertCell().innerText = t.speed;
+            scoreBoard.appendChild(tr);
+        });
+    }
+}
+
+function SaveLog(logItem) {
+    const logString = localStorage.getItem('test-log');
+    let log;
+    if (logString) {
+        log = new Array(...JSON.parse(logString));
+        log.push(logItem);
+    } else {
+        log = new Array(logItem);
+    }
+    localStorage.setItem('test-log', JSON.stringify(log));
+}
+
+function ClearLog() {
+    localStorage.clear();
 }
 
 (function () {
@@ -206,10 +257,10 @@ function judgeKey(enter) {
     let inputWord = document.querySelector('#input-word');
     inputWord.addEventListener('keyup', e => {
         if (e.key === 'Enter') {
-            judgeKey(true);
+            JudgeKey(true);
         }
     });
-    inputWord.addEventListener('input', () => judgeKey(false));
+    inputWord.addEventListener('input', () => JudgeKey(false));
 
     document.querySelector('#btn-retry').addEventListener('click', () => {
         ResetStatus();
@@ -219,7 +270,11 @@ function judgeKey(enter) {
         ChangeTestcase();
         Render();
     });
+    setInterval(() => {
+        RenderStatistics();
+    }, 1000);
 
+    LoadLog();
     ChangeTestcase();
     Render();
 })();

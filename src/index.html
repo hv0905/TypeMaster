@@ -71,9 +71,10 @@
             <div class="card-body sentence-section">
                 <div id="para-before" class="sentence-done"></div>
                 <p>
-                <span class="sentence-done" id="sentence-done"></span>
-                <span class="word-done" id="word-done"></span><span class="word-err" id="word-err"></span><span class="word-pending" id="word-pending"></span>
-                <span class="sentence-pending" id="sentence-pending"></span>
+                    <span class="sentence-done" id="sentence-done"></span>
+                    <span class="word-done" id="word-done"></span><span class="word-err" id="word-err"></span><span
+                        class="word-pending" id="word-pending"></span>
+                    <span class="sentence-pending" id="sentence-pending"></span>
                 </p>
                 <div id="para-after" class="sentence-pending"></div>
             </div>
@@ -85,6 +86,27 @@
             <input type="text" class="form-control" id="input-word" />
             <div class="invalid-feedback invisible" id="invalid-warning">键入内容有误</div>
         </div>
+
+        <!--Scoreboard section-->
+        <h2 class="mt-5">历史成绩
+            <button class="btn btn-danger"><i class="fas fa-stream"></i> 重置</button>
+        </h2>
+        <div>
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">时间</th>
+                        <th scope="col">时长</th>
+                        <th scope="col">词数</th>
+                        <th scope="col">速度</th>
+                    </tr>
+                </thead>
+                <tbody id="scoreboard">
+
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!--scripts goes here-->
@@ -94,4 +116,5 @@
     <script src="https://kit.fontawesome.com/b19a4f546e.js" crossorigin="anonymous"></script>
     <script src="/js/site.js"></script>
 </body>
+
 </html>
