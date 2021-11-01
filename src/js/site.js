@@ -36,6 +36,18 @@ function LiveAlert(message, type) {
     document.querySelector('#alert-placeholder').append(wrapper);
 }
 
+function ToTimeSpanString(timeSpan) {
+    const min = (Math.floor(timeSpan / 60)).toLocaleString('en-US', {
+        minimumIntegerDigits: 2,
+        useGrouping: false
+      });
+    const sec = (timeSpan % 60).toLocaleString('en-US', {
+        minimumIntegerDigits: 2,
+        useGrouping: false
+      });
+    return `${min}:${sec}`;
+}
+
 function ResetStatus() {
     startTime = endTime = 0;
     gameRunning = false;
@@ -101,7 +113,7 @@ function GetStatistics() {
 
 function RenderStatistics() {
     const stat = GetStatistics();
-    document.querySelector('#display-time').innerText = `${Math.floor(stat.gameTime / 60)}:${stat.gameTime % 60}`;
+    document.querySelector('#display-time').innerText = ToTimeSpanString(stat.gameTime);
     document.querySelector('#display-speed').innerText = `${stat.speed} wpm`;
     document.querySelector('#display-progress').innerText = `${stat.progress}`;
 }
@@ -165,8 +177,9 @@ function CompleteGame() {
     endTime = Date.now();
     let inputWord = document.querySelector('#input-word');
     inputWord.readOnly = true;
-    LiveAlert("测试完成.", 'success');
-    SaveLog(GetStatistics());
+    const stat = GetStatistics();
+    LiveAlert(`测试完成. 速度${stat.speed} wpm. 成绩已保存.`, 'success');
+    SaveLog();
     LoadLog();
 }
 
@@ -220,14 +233,14 @@ function LoadLog() {
     scoreBoard.innerHTML = '';
     if (logString) {
         const log = new Array(...JSON.parse(logString));
-        log.sort((x, y) => x.speed - y.speed);
+        log.sort((x, y) => y.speed - x.speed);
         log.forEach((t, index) => {
             let tr = document.createElement('tr');
             tr.insertCell().innerText = index + 1; // Index
-            tr.insertCell().innerText = t.eventTime;
-            tr.insertCell().innerText = t.gameTime;
+            tr.insertCell().innerText = new Date(t.eventTime).toLocaleString();
+            tr.insertCell().innerText = ToTimeSpanString(t.gameTime);
             tr.insertCell().innerText = t.wordCount;
-            tr.insertCell().innerText = t.speed;
+            tr.insertCell().innerText = t.speed + ' wpm';
             scoreBoard.appendChild(tr);
         });
     }
@@ -270,6 +283,11 @@ function ClearLog() {
         ChangeTestcase();
         Render();
     });
+    document.querySelector('#btn-reset-log').addEventListener('click', () => {
+        ClearLog();
+        LoadLog();
+    });
+
     setInterval(() => {
         RenderStatistics();
     }, 1000);
