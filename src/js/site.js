@@ -19,7 +19,6 @@ let _totalWordCount = 0;
 let _typingword = '';
 let _completePart = '';
 let _pendingPart = '';
-let _totalWords = 0;
 let _completedWordCount = 0;
 let _gameRunning = false;
 let _errMode = false;
@@ -68,7 +67,6 @@ function loadPara() {
     _completePart = '';
     _completeWords = [];
     _pendingWords = _paragraphs[_currentParaIndex].split(' ');
-    _totalWords = _pendingWords.length;
     _typingword = _pendingPart = _pendingWords[0];
     _pendingWords.splice(0, 1);
 }

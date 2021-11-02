@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "license": "MIT",
   "private": "true",
+  "scripts": {
+    "start": "live-server src",
+    "lint": "eslint"
+  },
   "devDependencies": {
+    "eslint": "^8.1.0",
     "live-server": "^1.2.1"
   },
-  "dependencies": {
-    
-  }
+  "dependencies": {}
 }
