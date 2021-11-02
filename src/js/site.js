@@ -40,11 +40,11 @@ function ToTimeSpanString(timeSpan) {
     const min = (Math.floor(timeSpan / 60)).toLocaleString('en-US', {
         minimumIntegerDigits: 2,
         useGrouping: false
-      });
+    });
     const sec = (timeSpan % 60).toLocaleString('en-US', {
         minimumIntegerDigits: 2,
         useGrouping: false
-      });
+    });
     return `${min}:${sec}`;
 }
 
@@ -179,7 +179,7 @@ function CompleteGame() {
     inputWord.readOnly = true;
     const stat = GetStatistics();
     LiveAlert(`测试完成. 速度${stat.speed} wpm. 成绩已保存.`, 'success');
-    SaveLog();
+    SaveLog(stat);
     LoadLog();
 }
 
